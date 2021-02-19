@@ -6,7 +6,9 @@ use App\Models\Pesantren;
 use App\Models\Santri;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class PesantrenController extends Controller
 {
@@ -17,11 +19,17 @@ class PesantrenController extends Controller
      */
     public function index()
     {
-        $data = Pesantren::all();
+        $data = DB::table('pesantren')
+        ->leftjoin('video', 'pesantren.id_pesantren', '=', 'video.id_pesantren_channel')
+        ->select('pesantren.nama_pesantren', 'pesantren.id_pesantren')
+        ->whereNotIn('pesantren.id_pesantren', DB::table('video')->select('id_pesantren_channel'))
+        ->groupBy('pesantren.nama_pesantren')
+        ->get();
         $total_channel = Video::count();
         $jumlah_santri = Santri::count();
         $channel = video::all();
         $jumlah_data = Pesantren::count();
+        // Alert::toast('Your Post as been submited!','success');
         return view('pesantren/index', ['datas' => $data, 'jumlah_data' => $jumlah_data, 'channel' => $channel, 'total_channel' => $total_channel, 'total_santri' => $jumlah_santri]);
     }
 
@@ -149,10 +157,12 @@ class PesantrenController extends Controller
                 ]);
 
                 // return response()->json(['pesantren' => $data]);
-                $data = [
-                    'nama_pesantren' => $nama_pesantren,
-                    'alamat_pesantren' => $alamat_pesantren,
-                ];
+                // $data = [
+                //     'nama_pesantren' => $nama_pesantren,
+                //     'alamat_pesantren' => $alamat_pesantren,
+                // ];
+
+                $data = Pesantren::all();
 
     
                 return response()->json(['pesantren' => $data]);
@@ -174,8 +184,9 @@ class PesantrenController extends Controller
     public function destroy(Request $request)
     {   
         $id_pesantren = $request->input('id_pesantren');
-        $data = Pesantren::where('id_pesantren', '=', $id_pesantren)->delete();
-        return redirect(route('Pesantren'));
+        Pesantren::where('id_pesantren', '=', $id_pesantren)->delete();
+        $data = Pesantren::all();
+        return response()->json(['pesantren' => $data]);
     }
 
     public function pesantren(Request $request)

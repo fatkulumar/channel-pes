@@ -23,8 +23,13 @@
 <script src="vendor/select2/dist/js/select2.min.js"></script> --}}
 
 
-  {{-- select2 --}}
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
+{{-- select2 --}}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
+
+{{-- sweetalert2 --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.33.1/sweetalert2.min.css">
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
 
 </head>
 
@@ -528,15 +533,15 @@
             <label for="id_pesantren_channel">Nama Pesantren</label>
             <select class="form-control" name="id_pesantren_channel" id="id_pesantren_channel">
               <option value="">Pilih</option>
-              @foreach ($datas as $data)
+              {{-- @foreach ($datas as $data)
                  <option value="{{$data->id_pesantren}}">{{$data->nama_pesantren}}</option> 
-              @endforeach
+              @endforeach --}}
             </select>
           </div>
 
           <div class="form-group">
             <label for="channel_id">Channel</label>
-            <input type="text" class="form-control" name="channel_id" id="channel" autocomplete="off">
+            <input type="text" class="form-control" name="channel_id" id="channel_id" autocomplete="off">
           </div>
 
         </div>
@@ -564,16 +569,29 @@
   <!-- Page Specific JS File -->
   <script src="{!! asset('assets/stisla/assets/js/page/index.js') !!}"></script>
 
-   {{-- select2 --}}
+  {{-- select2 --}}
    
   {{-- <script src="{!! asset('assets/jquery/jquery.min.js') !!}"></script> --}}
   {{-- <script src="{!! asset('assets/select2/dist/js/js2/select2.min.js') !!}"></script> --}}
    {{-- <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script> --}}
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+
+
+  {{-- sweetalert2 --}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.33.1/sweetalert2.min.js"></script>
+
+  {{-- datatables --}}
+  <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
 
   <script>
+	
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 1000
+    });
 
- 
     $(document).ready(function() {
       $.ajaxSetup({
 
@@ -584,7 +602,7 @@
       });
 
       loadData()
-      loadChanel()
+      // loadChanel()
 
       function loadData()
       {
@@ -632,6 +650,12 @@
               
           }
         })
+        Toast.fire({
+        type: 'success',
+        title: 'T ambah Pesantren Berhasil!'
+        });
+        $('#nama_pesantren').val('')
+        $('#alamat_pesantren').val('')
       });
 
       //ketika tombol edit di tekan
@@ -648,9 +672,21 @@
           type: 'POST',
           dataType: "JSON",
           success: function(data) {
-            console.log(data)
-            $('#modalEditData').modal('hide')
-            location.reload()
+            $('#tampil_table').html('');
+            var data = data.pesantren
+            $(data).each(function(i) {
+              var nama_pesantren = data[i].nama_pesantren
+              var id_pesantren = data[i].id_pesantren
+              var alamat_pesantren = data[i].alamat_pesantren
+              var no = i+1
+              var html = "<tr><td>"+ no +"</td><td class='font-weight-600'>"+nama_pesantren+"</td><td>"+alamat_pesantren+"</td><td><a href='javascript:void(0)' class='btn btn-warning' onclick='konfirm_pesantren("+id_pesantren+")'><i class='fa fa-trash'></i></a><a href='#' onclick='modalEdit("+id_pesantren+")' class='btn btn-primary'><i class='fa fa-edit'></i></a></td></tr>"
+              $('#tampil_table').append(html);
+            })
+            Toast.fire({
+            type: 'success',
+            title: 'Edit Pesantren Berhasil!'
+            })
+            $('#modalEditData').modal('hide');
           },
           error: function (error) {
           alert('error; ' + eval(error));
@@ -691,24 +727,41 @@
           type: 'POST',
           dataType: "JSON",
           success: function(data) {
-            console.log(data)
+            $('#tampil_channel').html('');
+            // console.log(data.channel)
+            var data = data.channel
+            $(data).each(function(i) {
+              var nama_pesantren = data[i].id_pesantren_channel
+              var channel_id = data[i].channel_id
+              var id_videos = data[i].id_videos
+              var no = i+1
+              var html = "<tr><td>"+ no +"</td><td class='font-weight-600'>"+nama_pesantren+"</td><td>"+channel_id+"</td><td><a href='javascript:void(0)' class='btn btn-warning' onclick='konfirm_channel("+id_videos+")'><i class='fa fa-trash'></i></a><a href='#' onclick='modalEditChannel("+id_videos+")' class='btn btn-primary'><i class='fa fa-edit'></i></a></td></tr>"
+              $('#tampil_channel').append(html);
+            })
             $('#modalEditChannel').modal('hide')
-            location.reload()
+            Toast.fire({
+            type: 'success',
+            title: 'Edit Berhasil!'
+            })
           }
         })
       });
+
+      
 
       //ajax tambah channel
       $('#btn_tambah_channel_pesantren').on('click', function(event) {
         event.preventDefault()
         var tambah_channel_pesantren = $('#tambah_channel_pesantren').serialize()
-        alert(tambah_channel_pesantren)
+        // alert(tambah_channel_pesantren)
         $.ajax({
           url: "{{ route('channel.store') }}",
           data: tambah_channel_pesantren,
           type: 'POST', 
           dataType: "JSON",
           success: function(data) {
+            $('#id_pesantren_channel').val('')
+            $('#channel_id').val('')
             console.log(data.channel)
             var nama_pesantren = data.channel.nama_pesantren
             var channel_id = data.channel.channel_id
@@ -716,6 +769,11 @@
               var html = "<tr><td>"+ jumlah_channel +"</td><td class='font-weight-600'>"+nama_pesantren+"</td><td>"+data.channel.channel_id+"</td><td><a href='javascript:void(0)' class='btn btn-warning' onclick='return confirm("+data.channel.id_videos+")'><i class='fa fa-trash'></i></a><a href='javascript:void(0)' onclick='modalEditChannel("+ data.channel.id_videos +")' class='btn btn-primary'><i class='fa fa-edit'></i></a></td></tr>"
               $('#modalTambahChannel').modal('hide')
               $('#tampil_channel').append(html);
+              Toast.fire({
+              type: 'success',
+              title: 'added channel successfully'
+              
+            })
           }
         })
       });
@@ -774,17 +832,29 @@
 
        //konfirm hapus data pesantren
        function konfirm_pesantren(id){
-        var con = confirm(id)
+        var con = confirm("Yakin Hapus?")
         if(con){
           $.ajax({
             url: "{{route('pesantren.delete')}}",
             data: {id_pesantren : id},
             type: "POST",
             dataType: "JSON",
-            suuccess: function(data){
-              window.location.href = "/admin"
-              location.reload()
-            }
+            success: function(data) {
+            $('#tampil_table').html('');
+            var data = data.pesantren
+            $(data).each(function(i) {
+              var nama_pesantren = data[i].nama_pesantren
+              var id_pesantren = data[i].id_pesantren
+              var alamat_pesantren = data[i].alamat_pesantren
+              var no = i+1
+              var html = "<tr><td>"+ no +"</td><td class='font-weight-600'>"+nama_pesantren+"</td><td>"+alamat_pesantren+"</td><td><a href='javascript:void(0)' class='btn btn-warning' onclick='konfirm_pesantren("+id_pesantren+")'><i class='fa fa-trash'></i></a><a href='#' onclick='modalEdit("+id_pesantren+")' class='btn btn-primary'><i class='fa fa-edit'></i></a></td></tr>"
+              $('#tampil_table').append(html);
+            })
+            Toast.fire({
+            type: 'success',
+            title: 'Hapus Pesantren Berhasil!'
+            })
+          }
           });
         }else{
           $('#modalEditPesantren').modal('hide')
@@ -792,22 +862,96 @@
       }
 
       function konfirm_channel(id){
-        var con = confirm(id)
+        var con = confirm("Yakin Hapus?")
         if(con){
           $.ajax({
             url: "{{route('channel.delete')}}",
             data: {id_videos : id},
             type: "POST",
             dataType: "JSON",
-            suuccess: function(data){
-              location.reload()
-              window.location.href = "/admin"
-            }
+            success: function(data) {
+            $('#tampil_channel').html('');
+            // console.log(data.channel)
+            var data = data.channel
+            $(data).each(function(i) {
+              var nama_pesantren = data[i].id_pesantren_channel
+              var channel_id = data[i].channel_id
+              var id_videos = data[i].id_videos
+              var no = i+1
+              var html = "<tr><td>"+ no +"</td><td class='font-weight-600'>"+nama_pesantren+"</td><td>"+channel_id+"</td><td><a href='javascript:void(0)' class='btn btn-warning' onclick='konfirm_channel("+id_videos+")'><i class='fa fa-trash'></i></a><a href='#' onclick='modalEditChannel("+id_videos+")' class='btn btn-primary'><i class='fa fa-edit'></i></a></td></tr>"
+              $('#tampil_channel').append(html);
+            })
+            $('#modalEditChannel').modal('hide')
+            Toast.fire({
+            type: 'success',
+            title: 'Hapus Berhasil!'
+            })
+          }
           });
         }else{
           $('#modalEditChannel').modal('hide')
         }
       }
+
+      //ajax modal tambah channel
+      function modalTambahChannel()
+      {
+        $.ajax({
+          url: "{{route('modalTambahChannel')}}",
+          type: 'GET',
+          dataType: "JSON",
+          success: function(data) {
+            var data = data.channel
+            console.log(data)
+            $(data).each(function(i) {
+              var nama_pesantren = data[i].nama_pesantren
+              var id_pesantren = data[i].id_pesantren
+              var html = "<option value="+ id_pesantren +">"+nama_pesantren+"</option>" 
+              $('#id_pesantren_channel').append(html)
+            })
+            $('#modalTambahChannel').modal('show')
+          }
+        })
+      }
+
+        // $(function() {
+            $('#table_channel').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('datatableChannel') }}",
+                columns: [
+                    { data: 'id_pesantren_channel', name: 'id_pesantren_channel' },
+                    { data: 'channel_id', name: 'channel_id' },
+                    // { data: 'created_at', name: 'created_at' },
+                    // { data: 'updated_at', name: 'updated_at' }
+                    {data: 'action', name: 'action', orderable: false, searchable: false},
+                ]
+            });
+        // });
+
+//       var table = $('#tampil_channel').DataTable({
+
+// processing: true,
+
+// serverSide: true,
+
+// ajax: "",
+
+// columns: [
+
+//     {data: 'id_pesantren', name: 'id_pesantren'},
+
+//     {data: 'nama_pesantren', name: 'nama_pesantren'},
+
+//     {data: 'alamat_pesantren', name: 'alamat_pesantren'},
+
+//     // {data: 'action', name: 'action', orderable: false, searchable: false},
+
+// ]
+
+// });
+
+
 
   </script>
 </body>

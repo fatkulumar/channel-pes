@@ -39,7 +39,8 @@
     <div class="card-header">
         <h4>Channel</h4>
         <div class="card-header-action">
-            <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#modalTambahChannel"><i class="fa fa-plus"></i></a>
+            {{-- <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#modalTambahChannel"><i class="fa fa-plus"></i></a> --}}
+            <a href="javascript:void(0)" class="btn btn-danger" onclick="modalTambahChannel()"><i class="fa fa-plus"></i></a>
         </div>
     </div>
 
@@ -50,8 +51,8 @@
                     <tr>
                         <th>No</th>
                         <th>Nama</th>
-                        <th>Channel</th>
-                        <th>Action</th>
+                        <th>actions</th>
+                        {{-- <th>Action</th> --}}
                     </tr> 
                 </thead>
                 <tbody id="tampil_channel">
@@ -67,5 +68,7 @@
         </div>
     </div>
 
+    
+  
    
     @endsection

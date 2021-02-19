@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pesantren;
+use App\Models\Santri;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\Contracts\DataTable;
+use Yajra\DataTables\DataTables;
 
 class ChannelController extends Controller
 {
@@ -143,13 +148,14 @@ class ChannelController extends Controller
                     'channel_id' => $channel_id,
                 ]);
 
-                $data = [
-                    'channel_id' => $channel_id,
-                    'nama_pesantren' => $id_pesantren,
-                ];
+                // $data = [
+                //     'channel_id' => $channel_id,
+                //     'nama_pesantren' => $id_pesantren,
+                // ];
+                $data = Video::all();
 
     
-                return response()->json(['pesantren' => $data]);
+                return response()->json(['channel' => $data]);
                     
                 
 			}
@@ -168,7 +174,76 @@ class ChannelController extends Controller
     public function destroy(Request $request)
     {
         $id_videos = $request->input('id_videos');
-        $data = Video::where('id_videos', $id_videos)->delete();
+        Video::where('id_videos', $id_videos)->delete();
+        $data = Video::all();
         return response()->json(['channel' => $data]);
+    }
+
+    public function modalTambahChannel()
+    {
+        $data = DB::table('pesantren')
+        ->leftjoin('video', 'pesantren.id_pesantren', '=', 'video.id_pesantren_channel')
+        ->select('pesantren.nama_pesantren', 'pesantren.id_pesantren')
+        ->whereNotIn('pesantren.id_pesantren', DB::table('video')->select('id_pesantren_channel'))
+        ->groupBy('pesantren.nama_pesantren')
+        ->get();
+        return response()->json(['channel' => $data]);
+    }
+
+    public function datatableChannel(Request $request)
+
+    {
+        return DataTables::of(Video::select('id_pesantren_channel', 'channel_id'))
+            ->addIndexColumn()
+            ->addColumn('action', function($row){
+
+     
+
+            $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm">View</a>';
+                return $btn;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+        // $data = DB::table('pesantren')
+        // ->leftjoin('video', 'pesantren.id_pesantren', '=', 'video.id_pesantren_channel')
+        // ->select('pesantren.nama_pesantren', 'pesantren.id_pesantren')
+        // ->whereNotIn('pesantren.id_pesantren', DB::table('video')->select('id_pesantren_channel'))
+        // ->groupBy('pesantren.nama_pesantren')
+        // ->get();
+        // $total_channel = Video::count();
+        // $jumlah_santri = Santri::count();
+        // $channel = video::all();
+        // $jumlah_data = Pesantren::count();
+
+        // if ($request->ajax()) {
+
+        //     $datar = Video::select('*');
+
+        //     return Datatables::of($datar)
+
+        //             ->addIndexColumn()
+
+        //             ->addColumn('action', function($row){
+
+     
+
+        //                    $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm">View</a>';
+
+       
+
+        //                     return $btn;
+
+        //             })
+
+        //             ->rawColumns(['action'])
+
+        //             ->make(true);
+
+        // }
+
+        
+
+        // return view('pesantren/index', ['datas' => $data, 'jumlah_data' => $jumlah_data, 'channel' => $channel, 'total_channel' => $total_channel, 'total_santri' => $jumlah_santri]);
+
     }
 }

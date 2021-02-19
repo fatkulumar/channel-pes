@@ -31,10 +31,13 @@ Route::post('pesantren/delete/', [PesantrenController::class, 'destroy'])->name(
 
 Route::GET('/channel', [ChannelController::class, 'index'])->name('channel');
 Route::GET('/dashboard/channel', [ChannelController::class, 'dashboard'])->name('dashboard.channel');
+Route::GET('/channel/modalTambahChannel', [ChannelController::class, 'modalTambahChannel'])->name('modalTambahChannel');
+Route::GET('/channel/datatableChannel', [ChannelController::class, 'datatableChannel'])->name('datatableChannel');
 Route::POST('channel/store', [ChannelController::class, 'store'])->name('channel.store');
 Route::POST('channel/delete', [ChannelController::class, 'destroy'])->name('channel.delete');
 Route::POST('channel/edit', [ChannelController::class, 'edit'])->name('channel.edit');
 Route::POST('channel/update', [ChannelController::class, 'update'])->name('channel.update');
+
 
 Route::GET('/santri', [SantriController::class, 'index'])->name('santri');
 Route::GET('/santri/data', [SantriController::class, 'data'])->name('santri.data');
